@@ -1,6 +1,6 @@
 main: io.github.hyperdrivemc.chargedch.ChargedCH
 name: ChargedCH
-version: 1.0.0
-api-version: 1.19
+version: @version@
+api-version: @api-version@
 description: Heals explosions
 authors: [gonsawa_, Duquee_]

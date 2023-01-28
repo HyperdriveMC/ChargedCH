@@ -1,11 +1,21 @@
 package io.github.hyperdrivemc.chargedch.tasks
 
 import io.github.hyperdrivemc.chargedch.ChargedCH
+import io.github.hyperdrivemc.chargedch.utils.getRegenDelay
+import io.github.hyperdrivemc.chargedch.utils.getRegenSpeed
 import org.bukkit.Sound
+import org.bukkit.World
 import org.bukkit.block.BlockState
 import org.bukkit.scheduler.BukkitRunnable
 
 class BorderRestorer(private val blockStateList: MutableList<BlockState>) : BukkitRunnable() {
+    private var explosionWorld: World? = null
+
+    init {
+        if (blockStateList.isNotEmpty()) {
+            explosionWorld = blockStateList[0].world
+        }
+    }
 
     override fun run() {
         if (blockStateList.isEmpty()) {
@@ -25,7 +35,8 @@ class BorderRestorer(private val blockStateList: MutableList<BlockState>) : Bukk
     }
 
     fun restore() {
-        this.runTaskTimer(ChargedCH.INSTANCE, 10 + (2*blockStateList.size).toLong(), 2)
+        explosionWorld?.let {
+            this.runTaskTimer(ChargedCH.INSTANCE, it.getRegenDelay(), it.getRegenSpeed())
+        }
     }
-
 }

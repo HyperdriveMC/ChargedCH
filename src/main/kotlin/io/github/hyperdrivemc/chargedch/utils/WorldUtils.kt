@@ -1,6 +1,7 @@
 package io.github.hyperdrivemc.chargedch.utils
 
 import io.github.hyperdrivemc.chargedch.ChargedCH
+import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.World
 import org.bukkit.persistence.PersistentDataType
@@ -8,11 +9,15 @@ import org.bukkit.persistence.PersistentDataType
 lateinit var regenKey: NamespacedKey
 lateinit var regenSpeedKey: NamespacedKey
 lateinit var regenDelayKey: NamespacedKey
+lateinit var replaceBlockKeysMapKey: NamespacedKey
+lateinit var replaceBlockValuesMapKey: NamespacedKey
 
 fun assignKeys(instance: ChargedCH) {
     regenKey = NamespacedKey(instance, "regen")
     regenSpeedKey = NamespacedKey(instance, "regenSpeed")
     regenDelayKey = NamespacedKey(instance, "regenDelay")
+    replaceBlockKeysMapKey = NamespacedKey(instance, "replaceBlockKeysMap")
+    replaceBlockValuesMapKey = NamespacedKey(instance, "replaceBlockValuesMap")
 }
 
 fun World.setRegen(regen: Boolean) {
@@ -42,4 +47,29 @@ fun World.setRegenDelay(ticks: Long) {
 fun World.getRegenDelay(): Long {
     return persistentDataContainer.get(regenDelayKey, PersistentDataType.LONG) ?:
     ChargedCH.INSTANCE.config.getLong("default-regen-delay", 10)
+}
+
+fun World.setReplaceBlockMap(blockMap: Map<Material, Material>) {
+    persistentDataContainer.set(replaceBlockKeysMapKey,
+        PersistentDataType.STRING, blockMap.keys.joinToString(",") { it.key.toString() })
+    persistentDataContainer.set(replaceBlockValuesMapKey,
+        PersistentDataType.STRING, blockMap.values.joinToString(",") { it.key.toString() })
+}
+
+fun World.getReplaceBlockMap(): Map<Material, Material> {
+    val storedKeysList = persistentDataContainer.get(replaceBlockKeysMapKey, PersistentDataType.STRING)
+    val storedValuesList = persistentDataContainer.get(replaceBlockValuesMapKey, PersistentDataType.STRING)
+    if (storedKeysList != null && storedValuesList != null) {
+        val keys = storedKeysList.split(",").map { Material.matchMaterial(it) ?: Material.AIR }
+        val values = storedValuesList.split(",").map { Material.matchMaterial(it) ?: Material.AIR }
+        return keys.zip(values).associate { (key, value) -> key to value }
+    }
+    ChargedCH.INSTANCE.config.getConfigurationSection("default-replace-blocks")?.let {
+        val keys = it.getKeys(false)
+        val values = keys.map { key -> it.getString(key) ?: "minecraft:air" }
+        return keys.zip(values).associate { (key, value) ->
+            (Material.matchMaterial(key) ?: Material.AIR) to (Material.matchMaterial(value) ?: Material.AIR)
+        }.filter { (key) -> key != Material.AIR }
+    }
+    return emptyMap()
 }

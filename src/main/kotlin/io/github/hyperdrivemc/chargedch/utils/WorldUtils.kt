@@ -23,7 +23,7 @@ fun World.getRegen(): Boolean {
     persistentDataContainer.get(regenKey, PersistentDataType.BYTE)?.let {
         return it == 1.toByte()
     }
-    return false
+    return ChargedCH.INSTANCE.config.getBoolean("default-regen", true)
 }
 
 fun World.setRegenSpeed(ticks: Long) {
@@ -31,7 +31,8 @@ fun World.setRegenSpeed(ticks: Long) {
 }
 
 fun World.getRegenSpeed(): Long {
-    return persistentDataContainer.get(regenSpeedKey, PersistentDataType.LONG) ?: 2
+    return persistentDataContainer.get(regenSpeedKey, PersistentDataType.LONG) ?:
+    ChargedCH.INSTANCE.config.getLong("default-regen-speed", 2)
 }
 
 fun World.setRegenDelay(ticks: Long) {
@@ -39,5 +40,6 @@ fun World.setRegenDelay(ticks: Long) {
 }
 
 fun World.getRegenDelay(): Long {
-    return persistentDataContainer.get(regenDelayKey, PersistentDataType.LONG) ?: 10
+    return persistentDataContainer.get(regenDelayKey, PersistentDataType.LONG) ?:
+    ChargedCH.INSTANCE.config.getLong("default-regen-delay", 10)
 }
